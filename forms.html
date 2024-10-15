@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+<style>
+    @import url(https://fonts.googleapis.com/css?family=Montserrat);
+    * { margin: 0; padding: 0; }
+    html { height: 100%; background: #FFD700; }
+    body { font-family: montserrat, arial, verdana; background: transparent; }
+    #msform { text-align: center; position: relative; margin-top: 30px; padding-bottom: 20px; }
+    #msform fieldset { background: white; border: 0 none; border-radius: 0px; box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4); padding: 20px 30px; box-sizing: border-box; width: 50%; margin: auto; position: relative; }
+    #msform fieldset:not(:first-of-type) { display: none; }
+    #msform input, #msform textarea { padding: 15px; border: 1px solid #ccc; border-radius: 0px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-family: montserrat; color: #2C3E50; font-size: 13px; }
+    #msform input:focus, #msform textarea:focus { border: 1px solid #fff; outline-width: 0; transition: All 0.5s ease-in; }
+    #msform .action-button, #msform .action-button-previous { width: 100px; font-weight: bold; color: white; border: 0 none; border-radius: 25px; cursor: pointer; padding: 10px 5px; margin: 10px 5px; }
+    #msform .action-button { background: #d8a50d; }
+    #msform .action-button-previous { background: #C5C5F1; }
+    .fs-title { font-size: 18px; text-transform: uppercase; color: #2C3E50; margin-bottom: 10px; letter-spacing: 2px; font-weight: bold; }
+    .fs-subtitle { font-weight: normal; font-size: 13px; color: #666; margin-bottom: 20px; }
+    #progressbar { margin-bottom: 30px; overflow: hidden; counter-reset: step; display: flex; justify-content: center; }
+    #progressbar li { list-style-type: none; color: white; text-transform: uppercase; font-size: 9px; width: 33.33%; float: left; position: relative; letter-spacing: 1px; }
+    #progressbar li:before { content: counter(step); counter-increment: step; width: 24px; height: 24px; line-height: 26px; display: block; font-size: 12px; color: #333; background: white; border-radius: 25px; margin: 0 auto 10px auto; }
+    #progressbar li:after { content: ''; width: 100%; height: 2px; background: white; position: absolute; left: -50%; top: 9px; z-index: -1; }
+    #progressbar li:first-child:after { content: none; }
+    #progressbar li.active:before, #progressbar li.active:after { background: #d8a50d; color: white; }
+    .card-logos { display: flex; justify-content: center; margin-bottom: 20px; }
+    .card-logos img { width: 66px; height: 32px; margin: 0 10px; }
+    .error-message { color: red; display: none; margin: 10px 0; }
+</style>
+
+<div class="row">
+    <div class="col-md-6 col-md-offset-3">
+        <form id="msform">
+            <ul id="progressbar">
+                <li class="active">Détails Personnels</li>
+                <li>Informations de Paiement</li>
+            </ul>
+            <fieldset>
+                <h2 class="fs-title">Détails Personnels</h2>
+                <h3 class="fs-subtitle">Parlez-nous un peu plus de vous</h3>
+                <input type="text" name="fname" placeholder="Nom d'utilisateur" required/>
+                <input type="text" name="phone" placeholder="Téléphone" required/>
+                <input type="email" name="email" placeholder="Email" required/>
+                <input type="password" name="password" placeholder="Mot de passe" required/>
+                <input type="password" name="confirm_password" placeholder="Confirmer le mot de passe" required/>
+                <div class="error-message">Veuillez remplir tous les champs.</div>
+                <input type="button" name="next" class="next action-button" value="Suivant"/>
+            </fieldset>
+            <fieldset>
+                <h2 class="fs-title">Informations de Paiement</h2>
+                <h3 class="fs-subtitle">Veuillez fournir vos informations de paiement</h3>
+                <div class="card-logos">
+                    <img src="img/visa.png" alt="Visa" />
+                    <img src="img/Appel.png" alt="MasterCard" />
+                    <img src="img/Strip.jpeg" alt="American Express" />
+                    <img src="img/PayPal-Logo.png" alt="PayPal" />
+                </div>
+                <input type="text" name="cardholder" placeholder="Nom du titulaire de la carte" required />
+                <input type="text" name="cardnumber" placeholder="Numéro de carte" required />
+                <input type="text" name="expirydate" placeholder="Date d'expiration (MM/AA)" required />
+                <input type="text" name="cvv" placeholder="CVV" required />
+                <input type="text" name="billing-address" placeholder="Adresse de facturation" required />
+                <input type="text" name="postal-code" placeholder="Code Postal" required />
+                <input type="text" name="total-amount" placeholder="Montant total" required />
+                
+                <input type="button" name="next" class="next action-button" value="Soumettre" />
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        var animating = false;
+
+        $(".next").click(function() {
+            if (animating) return false;
+            var current_fs = $(this).parent();
+            var errorMessage = current_fs.find(".error-message");
+            errorMessage.hide();
+
+            // Vérification des champs requis dans le premier formulaire
+            if (current_fs.is(":first-of-type")) {
+                if (current_fs.find("input:invalid").length > 0) {
+                    errorMessage.show();
+                    return; 
+                }
+            }
+
+            animating = true;
+            var next_fs = current_fs.next();
+            $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
+            next_fs.show();
+            current_fs.animate({opacity: 0}, {
+                duration: 600,
+                complete: function() {
+                    current_fs.hide();
+                    animating = false;
+                }
+            });
+        });
+
+        $(".previous").click(function() {
+            if (animating) return false;
+            animating = true;
+
+            var current_fs = $(this).parent();
+            var previous_fs = current_fs.prev();
+
+            // Si on retourne au premier fieldset, effacer les messages de validation
+            if (previous_fs.length) {
+                $("#progressbar li").eq($("fieldset").index(current_fs)).removeClass("active");
+                previous_fs.show();
+                current_fs.animate({opacity: 0}, {
+                    duration: 600,
+                    complete: function() {
+                        current_fs.hide();
+                        animating = false;
+                    }
+                });
+            } else {
+                // Si aucun fieldset précédent, réinitialiser le formulaire
+                current_fs.hide();
+                $("#progressbar li").removeClass("active");
+                $("fieldset").first().show();
+                $("#progressbar li").first().addClass("active");
+                animating = false;
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
